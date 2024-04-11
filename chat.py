@@ -2,6 +2,7 @@ import requests
 import json
 import random
 import time
+import schedule
 
 def get_random_message(channel_id, auth):
     headers = {
@@ -32,15 +33,17 @@ def send_message(channel_id, auth, message):
     res = requests.post(url=url, headers=headers, data=json.dumps(data))
     print(res.content)
 
-def chat(chanel_list, auth):
-    while True:
-        for channel_id in chanel_list:
-            message = get_random_message(channel_id, auth)
-            if message:
-                send_message(channel_id, auth, message)
-                break
-        time.sleep(random.randrange(60, 61))
+def job(chanel_list, auth):
+    for channel_id in chanel_list:
+        message = get_random_message(channel_id, auth)
+        if message:
+            send_message(channel_id, auth, message)
 
 chanel_list = ['']
 auth = ''
-chat(chanel_list, auth)
+
+schedule.every(60).seconds.do(job, chanel_list, auth)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
